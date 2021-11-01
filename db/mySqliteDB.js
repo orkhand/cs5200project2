@@ -286,7 +286,7 @@ async function updateAthletesByID(athleteID, ref) {
   });
 
   const stmt = await db.prepare(`
-    UPDATE Reference
+    UPDATE Athletes
     SET
       name = @name,
       weight = @weight,
