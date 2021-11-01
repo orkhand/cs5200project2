@@ -6,7 +6,7 @@
     <%- include("../templates/navBar.ejs") %>
 
     <div class="container">
-      <h1>Reference Manager</h1>
+      <h1>Olympic Games</h1>
 
 
       <% if (msg) { %>
@@ -18,11 +18,33 @@
 
       <div class="row">
         <div class="col-8">
-          <%- include("../components/searchBar.ejs", { query }) %>
-          <%- include("../components/referencesList.ejs", { references, currentPage, lastPage }) %>
+          
+          <% if (games) { %>
+            <%- include("../components/gamesCitySearchBar.ejs", { query }) %>
+            <%- include("../components/gamesList.ejs", { games, currentPage, lastPage }) %>
+          <% } %>
+          
+          
+          <% if (athletes) { %>
+            <%- include("../components/athleteByNameSearchBar.ejs", { query }) %>
+            <%- include("../components/athletesList.ejs", { athletes, currentPage, lastPage }) %>
+          <% } %>
+
+
+          <% if (sports) { %>
+            <%- include("../components/sportsTypeSearchBar.ejs", { query }) %>
+            <%- include("../components/sportsList.ejs", { sports, currentPage, lastPage }) %>
+          <% } %>
+
+          <% if (events) { %>
+            <%- include("../components/eventsByNameSearchBar.ejs", { query }) %>
+            <%- include("../components/eventsList.ejs", { events, currentPage, lastPage }) %>
+          <% } %>
+
+
         </div>
         <div class="col-4">
-          <%- include("../components/formCreateReference.ejs") %>
+          <!-- <%- include("../components/formCreateReference.ejs") %> -->
         </div>
       </div>
 
