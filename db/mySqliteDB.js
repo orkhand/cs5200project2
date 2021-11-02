@@ -198,7 +198,6 @@ async function getEventsBySportCount(query) {
 
 
 
-
 async function getGamesCount(query) {
   console.log("getGamesCount", query);
 
@@ -393,55 +392,35 @@ async function getAthleteByID(athleteID) {
 }
 
 
-async function insertReference(ref) {
-  const db = await open({
-    filename: databasePath,
-    driver: sqlite3.Database,
-  });
-
-  const stmt = await db.prepare(`INSERT INTO
-    Reference(title, published_on)
-    VALUES (@title, @published_on);`);
-
-  try {
-    return await stmt.run({
-      "@title": ref.title,
-      "@published_on": ref.published_on,
-    });
-  } finally {
-    await stmt.finalize();
-    db.close();
-  }
-}
-
-
-
-async function addAuthorIDToReferenceID(reference_id, author_id) {
-  console.log("addAuthorIDToReferenceID", reference_id, author_id);
+async function getGamesByAthleteID(athleteID) {
+  console.log("getGamesByAthleteID", athleteID);
 
   const db = await open({
-    filename: databasePath,
+    filename: "./db/olympic-games-sqlite.db",
     driver: sqlite3.Database,
   });
 
   const stmt = await db.prepare(`
-    INSERT INTO
-    Reference_Author(reference_id, author_id)
-    VALUES (@reference_id, @author_id);
+  SELECT  Games.city, Games.season, Games.year
+  FROM Athletes
+   Inner Join Attendance on Athletes.athleteID =  Attendance.athleteID
+   Inner Join Games on Attendance.gameID =  Games.gameID
+   WHERE Athletes.athleteID  =  @athleteID;
     `);
 
   const params = {
-    "@reference_id": reference_id,
-    "@author_id": author_id,
+    "@athleteID": athleteID,
   };
 
   try {
-    return await stmt.run(params);
+    return await stmt.all(params);
   } finally {
     await stmt.finalize();
     db.close();
   }
 }
+
+
 
 
 module.exports.getGames = getGames;
@@ -457,5 +436,4 @@ module.exports.updateAthletesByID = updateAthletesByID;
 module.exports.deleteAthletesByID = deleteAthletesByID;
 module.exports.getAthleteByID = getAthleteByID;
 module.exports.getEventsBySportCount = getEventsBySportCount;
-
-module.exports.addAuthorIDToReferenceID = addAuthorIDToReferenceID;
+module.exports.getGamesByAthleteID = getGamesByAthleteID;

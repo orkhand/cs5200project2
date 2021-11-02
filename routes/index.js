@@ -156,21 +156,27 @@ router.get("/events/sports", async (req, res, next) => {
 
 router.get("/athletes/:athleteID/edit", async (req, res, next) => {
   const athleteID = req.params.athleteID;
-
+  const page = +req.query.page || 1;
+  const pageSize = +req.query.pageSize || 24;
   const msg = req.query.msg || null;
   try {
 
     let athlete = await myDb.getAthleteByID(athleteID);
-
+    let games = await myDb.getGamesByAthleteID(athleteID);
+    console.log("/athletes/:athleteID/edit", athleteID, athlete, games, games.length);
     console.log("edit atheletes", {
       athlete,
+      games,
       msg,
     });
-
+    const total = games.length;
 
     res.render("./pages/editAthlete", {
       athlete,
+      games,
       msg,
+      currentPage: page,
+      lastPage: Math.ceil(total/pageSize),
     });
   } catch (err) {
     next(err);
