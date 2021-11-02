@@ -450,6 +450,89 @@ async function getGenderStatisticsBySportType(sportsType) {
   }
 }
 
+// only insert into Attendance and Athletes Tables
+async function createAthlete(ref) {
+  const db = await open({
+    filename: databasePath,
+    driver: sqlite3.Database,
+  });
+
+  try{
+    let athleteID = await insertAthleteRecord(ref, db);
+    insertAttendanceRecord(ref, athleteID, db);
+  }finally{
+    db.close();
+  }
+}
+
+async function insertAttendanceRecord(ref, athleteID, db) {
+  let teamID = await getTeamID(ref, db);
+  let gameID = await getGameID(ref, db);
+  console.log("teamId", teamID);
+  console.log("gameId", gameID);
+  const stmt = await db.prepare(`INSERT INTO Attendance
+  VALUES (@teamID, @gameID, @athleteID);`);
+  try {
+    return await stmt.run({
+      "@teamID": teamID,
+      "@gameID": gameID,
+      "@athleteID": athleteID,
+    });
+  } finally {
+    await stmt.finalize();
+  }
+}
+
+async function getTeamID(ref, db){
+  const stmt = await db.prepare(`
+    SELECT * FROM Teams
+    WHERE country = @country;
+    `);
+  const params = {
+    "@country": ref.country,
+  };
+  try {
+    let team = await stmt.get(params);
+    return team.teamID;
+  } finally {
+    await stmt.finalize();
+  }
+}
+async function getGameID(ref, db){
+  const stmt = await db.prepare(`
+    SELECT * FROM Games
+    WHERE season = @season AND year = @year;
+  `);
+  const params = {
+    "@season": ref.season,
+    "@year": ref.year,
+  };
+  try {
+    let game = await stmt.get(params);
+    return game.gameID;
+  } finally {
+    await stmt.finalize();
+  }
+}
+
+
+async function insertAthleteRecord(ref, db) {
+  const stmt = await db.prepare(`INSERT INTO Athletes(name, sex, age, height, weight)
+   VALUES (@name, @sex, @age, @height, @weight);`);
+  try {
+    let record = await stmt.run({
+      "@name": ref.name,
+      "@sex": ref.sex,
+      "@age": ref.age,
+      "@height": ref.height,
+      "@weight": ref.weight,
+    });
+    //console.log("record");
+    return record.lastID;
+  } finally {
+    await stmt.finalize();
+  }
+}
 
 
 
@@ -468,3 +551,4 @@ module.exports.getAthleteByID = getAthleteByID;
 module.exports.getEventsBySportCount = getEventsBySportCount;
 module.exports.getGamesByAthleteID = getGamesByAthleteID;
 module.exports.getGenderStatisticsBySportType = getGenderStatisticsBySportType;
+module.exports.createAthlete = createAthlete;
