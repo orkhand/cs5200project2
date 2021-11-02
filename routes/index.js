@@ -4,7 +4,7 @@ const router = express.Router();
 const myDb = require("../db/mySqliteDB.js");
 
 /* GET home page. */
-router.get("/", async function (req, res, next) {
+router.get("/", async function (req, res) {
   res.redirect("/games");
 });
 
@@ -202,16 +202,16 @@ router.get("/athletes/:athleteID/delete", async (req, res, next) => {
   }
 });
 
-router.post("/createReference", async (req, res, next) => {
+router.post("/createAthlete", async (req, res, next) => {
   const ref = req.body;
-
+  console.log("medal", ref.medal);
   try {
-    const insertRes = await myDb.insertReference(ref);
+    await myDb.createAthlete(ref);
 
-    console.log("Inserted", insertRes);
-    res.redirect("/references/?msg=Inserted");
+    //console.log("Inserted", insertRes);
+    res.redirect("/athletes/?msg=New athlete created.");
   } catch (err) {
-    console.log("Error inserting", err);
+    res.redirect("/athletes/?msg=Error creating athlete.");
     next(err);
   }
 });

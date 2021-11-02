@@ -361,26 +361,87 @@ async function getAthleteByID(athleteID) {
     db.close();
   }
 }
-
-
-async function insertReference(ref) {
+// only insert into Attendance and Athletes Tables
+async function createAthlete(ref) {
   const db = await open({
-    filename: databasePath,
+    filename: "./db/olympic-games-sqlite.db",
     driver: sqlite3.Database,
   });
+  
+  try{
+    let athleteID = await insertAthleteRecord(ref, db);
+    insertAttendanceRecord(ref, athleteID, db);
+  }finally{
+    db.close();
+  }
+}
 
-  const stmt = await db.prepare(`INSERT INTO
-    Reference(title, published_on)
-    VALUES (@title, @published_on);`);
-
+async function insertAttendanceRecord(ref, athleteID, db) {
+  let teamID = await getTeamID(ref, db);
+  let gameID = await getGameID(ref, db);
+  console.log("teamId", teamID);
+  console.log("gameId", gameID);
+  const stmt = await db.prepare(`INSERT INTO Attendance
+  VALUES (@teamID, @gameID, @athleteID);`);
   try {
     return await stmt.run({
-      "@title": ref.title,
-      "@published_on": ref.published_on,
+      "@teamID": teamID,
+      "@gameID": gameID,
+      "@athleteID": athleteID,
     });
   } finally {
     await stmt.finalize();
-    db.close();
+  }
+}
+
+async function getTeamID(ref, db){
+  const stmt = await db.prepare(`
+    SELECT * FROM Teams
+    WHERE country = @country;
+    `);
+  const params = {
+    "@country": ref.country,
+  };
+  try {
+    let team = await stmt.get(params);
+    return team.teamID;
+  } finally {
+    await stmt.finalize();
+  }
+}
+async function getGameID(ref, db){
+  const stmt = await db.prepare(`
+    SELECT * FROM Games
+    WHERE season = @season AND year = @year;
+  `);
+  const params = {
+    "@season": ref.season,
+    "@year": ref.year,
+  };
+  try {
+    let game = await stmt.get(params);
+    return game.gameID;
+  } finally {
+    await stmt.finalize();
+  }
+}
+
+
+async function insertAthleteRecord(ref, db) {
+  const stmt = await db.prepare(`INSERT INTO Athletes(name, sex, age, height, weight)
+   VALUES (@name, @sex, @age, @height, @weight);`);
+  try {
+    let record = await stmt.run({
+      "@name": ref.name,
+      "@sex": ref.sex,
+      "@age": ref.age,
+      "@height": ref.height,
+      "@weight": ref.weight,
+    });
+    //console.log("record");
+    return record.lastID;
+  } finally {
+    await stmt.finalize();
   }
 }
 
@@ -426,5 +487,6 @@ module.exports.getEventsCount = getEventsCount;
 module.exports.updateAthletesByID = updateAthletesByID;
 module.exports.deleteAthletesByID = deleteAthletesByID;
 module.exports.getAthleteByID = getAthleteByID;
+module.exports.createAthlete = createAthlete;
 
 module.exports.addAuthorIDToReferenceID = addAuthorIDToReferenceID;

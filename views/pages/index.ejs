@@ -17,7 +17,7 @@
 
 
       <div class="row">
-        <div class="col-8">
+        <div class="col">
           
           <% if (games) { %>
             <%- include("../components/gamesCitySearchBar.ejs", { query }) %>
@@ -26,8 +26,16 @@
           
           
           <% if (athletes) { %>
-            <%- include("../components/athleteByNameSearchBar.ejs", { query }) %>
-            <%- include("../components/athletesList.ejs", { athletes, currentPage, lastPage }) %>
+            <div class="row">
+              <div class="col-sm-8">
+                <%- include("../components/athleteByNameSearchBar.ejs", { query }) %>
+
+                <%- include("../components/athletesList.ejs", { athletes, currentPage, lastPage }) %>
+              </div>
+              <div class="col-sm-4">
+                <%- include("../components/formCreateAthlete.ejs") %>
+              </div>
+            </div>            
           <% } %>
 
 
@@ -43,9 +51,7 @@
 
 
         </div>
-        <div class="col-4">
-          <!-- <%- include("../components/formCreateReference.ejs") %> -->
-        </div>
+
       </div>
 
     </div>
