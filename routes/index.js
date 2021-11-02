@@ -242,4 +242,18 @@ router.get("/sports/:sportsType/viewInfo", async (req, res, next) => {
   }
 });
 
+router.post("/createAthlete", async (req, res, next) => {
+  const ref = req.body;
+  console.log("medal", ref.medal);
+  try {
+    await myDb.createAthlete(ref);
+
+    //console.log("Inserted", insertRes);
+    res.redirect("/athletes/?msg=New athlete created.");
+  } catch (err) {
+    res.redirect("/athletes/?msg=Error creating athlete.");
+    next(err);
+  }
+});
+
 module.exports = router;
