@@ -421,6 +421,36 @@ async function getGamesByAthleteID(athleteID) {
 }
 
 
+async function getGenderStatisticsBySportType(sportsType) {
+  console.log("getGenderStatisticsBySportType", sportsType);
+
+  const db = await open({
+    filename: "./db/olympic-games-sqlite.db",
+    driver: sqlite3.Database,
+  });
+
+  const stmt = await db.prepare(`
+  SELECT    Athletes.sex ,count(*) as count
+  FROM Sports, Athletes
+  Inner Join Events on Events.sportID =  Sports.sportID
+  Inner Join Participations on Athletes.athleteID =  Participations.athleteID and Participations.eventID =  Events.eventID
+  WHERE Sports.sportsType like @sportsType 
+  GROUP By Athletes.sex
+    `);
+
+  const params = {
+    "@sportsType": sportsType,
+  };
+
+  try {
+    return await stmt.all(params);
+  } finally {
+    await stmt.finalize();
+    db.close();
+  }
+}
+
+
 
 
 module.exports.getGames = getGames;
@@ -437,3 +467,4 @@ module.exports.deleteAthletesByID = deleteAthletesByID;
 module.exports.getAthleteByID = getAthleteByID;
 module.exports.getEventsBySportCount = getEventsBySportCount;
 module.exports.getGamesByAthleteID = getGamesByAthleteID;
+module.exports.getGenderStatisticsBySportType = getGenderStatisticsBySportType;

@@ -16,7 +16,6 @@ router.get("/games", async (req, res, next) => {
   const msg = req.query.msg || null;
   try {
     let total = await myDb.getGamesCount(query);
-    console.log("/games","total", total);
     let games = await myDb.getGames(query, page, pageSize);
     let athletes = null;
     let sports = null;
@@ -42,7 +41,6 @@ router.get("/athletes", async (req, res, next) => {
   const page = +req.query.page || 1;
   const pageSize = +req.query.pageSize || 24;
   const msg = req.query.msg || null;
-  // console.log("===> athletes, req");
   try {
     let total = await myDb.getAthletesCount(query);
     let athletes = await myDb.getAthletes(query, page, pageSize);
@@ -70,7 +68,6 @@ router.get("/sports", async (req, res, next) => {
   const page = +req.query.page || 1;
   const pageSize = +req.query.pageSize || 24;
   const msg = req.query.msg || null;
-  // console.log("===> athletes, req");
   try {
     let total = await myDb.getSportsCount(query);
     let sports = await myDb.getSports(query, page, pageSize);
@@ -130,12 +127,10 @@ router.get("/events/sports", async (req, res, next) => {
   const msg = req.query.msg || null;
   const eventsBySportQuery = query;
   query = "";
-  console.log("eventsBySportQuery", eventsBySportQuery);
   let games = null;
   let athletes = null;
   try {
     let total = await myDb.getEventsBySportCount(eventsBySportQuery);
-    console.log("total = ",total);
     let events = await myDb.getEventsBySport(eventsBySportQuery, page, pageSize);
     let sports = null;
     res.render("./pages/index", {
@@ -163,7 +158,6 @@ router.get("/athletes/:athleteID/edit", async (req, res, next) => {
 
     let athlete = await myDb.getAthleteByID(athleteID);
     let games = await myDb.getGamesByAthleteID(athleteID);
-    console.log("/athletes/:athleteID/edit", athleteID, athlete, games, games.length);
     console.log("edit atheletes", {
       athlete,
       games,
@@ -203,27 +197,6 @@ router.post("/athletes/:athleteID/edit", async (req, res, next) => {
   }
 });
 
-router.post("/references/:reference_id/addAuthor", async (req, res, next) => {
-  console.log("Add author", req.body);
-  const reference_id = req.params.reference_id;
-  const author_id = req.body.author_id;
-
-  try {
-
-    let updateResult = await myDb.addAuthorIDToReferenceID(reference_id, author_id);
-    console.log("addAuthorIDToReferenceID", updateResult);
-
-    if (updateResult && updateResult.changes === 1) {
-      res.redirect(`/references/${reference_id}/edit?msg=Author added`);
-    } else {
-      res.redirect(`/references/${reference_id}/edit?msg=Error adding author`);
-    }
-
-  } catch (err) {
-    next(err);
-  }
-});
-
 router.get("/athletes/:athleteID/delete", async (req, res, next) => {
   const athleteID = req.params.athleteID;
 
@@ -243,16 +216,28 @@ router.get("/athletes/:athleteID/delete", async (req, res, next) => {
   }
 });
 
-router.post("/createReference", async (req, res, next) => {
-  const ref = req.body;
+
+
+
+router.get("/sports/:sportsType/viewInfo", async (req, res, next) => {
+  const sportsType = req.params.sportsType;
 
   try {
-    const insertRes = await myDb.insertReference(ref);
 
-    console.log("Inserted", insertRes);
-    res.redirect("/references/?msg=Inserted");
+    let genderStats = await myDb.getGenderStatisticsBySportType(sportsType);
+    console.log("requested info", genderStats);
+
+    if(genderStats.length === 0) {
+      genderStats = [ { "sex": "F", "count": 0 }, { "sex": "M", "count": 0 } ];
+    }
+
+    res.render("./pages/genderStatistic", {
+      sportsType,
+      genderStats
+    });
+
+
   } catch (err) {
-    console.log("Error inserting", err);
     next(err);
   }
 });
