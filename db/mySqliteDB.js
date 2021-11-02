@@ -148,7 +148,7 @@ async function getEventsBySport(query, page, pageSize) {
     SELECT * FROM Events
     Inner Join Sports on Events.sportID =  Sports.sportID
     WHERE Sports.sportsType LIKE @query
-    ORDER BY name ASC
+    ORDER BY eventType ASC
     LIMIT @pageSize
     OFFSET @offset;
     `);
@@ -168,6 +168,36 @@ async function getEventsBySport(query, page, pageSize) {
     db.close();
   }
 }
+
+
+async function getEventsBySportCount(query) {
+  console.log("getEventsBySportCount", query);
+
+  const db = await open({
+    filename: databasePath,
+    driver: sqlite3.Database,
+  });
+
+  const stmt = await db.prepare(`
+  SELECT COUNT(*) AS count
+  FROM Events
+    Inner Join Sports on Events.sportID =  Sports.sportID
+    WHERE Sports.sportsType LIKE @query
+    `);
+  const params = {
+    "@query": query + "%",
+  };
+
+  try {
+    return (await stmt.get(params)).count;
+  } finally {
+    await stmt.finalize();
+    db.close();
+  }
+}
+
+
+
 
 async function getGamesCount(query) {
   console.log("getGamesCount", query);
@@ -426,5 +456,6 @@ module.exports.getEventsCount = getEventsCount;
 module.exports.updateAthletesByID = updateAthletesByID;
 module.exports.deleteAthletesByID = deleteAthletesByID;
 module.exports.getAthleteByID = getAthleteByID;
+module.exports.getEventsBySportCount = getEventsBySportCount;
 
 module.exports.addAuthorIDToReferenceID = addAuthorIDToReferenceID;

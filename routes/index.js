@@ -104,12 +104,47 @@ router.get("/events", async (req, res, next) => {
     let games = null;
     let athletes = null;
     let sports = null;
+    const eventsBySportQuery = "";
     res.render("./pages/index", {
       sports,
       events,
       games,
       athletes,
       query,
+      eventsBySportQuery,
+      msg,
+      currentPage: page,
+      lastPage: Math.ceil(total/pageSize),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+router.get("/events/sports", async (req, res, next) => {
+  let query = req.query.eventsBySportQuery || "";
+  console.log("/events/sports", query);
+  const page = +req.query.page || 1;
+  const pageSize = +req.query.pageSize || 24;
+  const msg = req.query.msg || null;
+  const eventsBySportQuery = query;
+  query = "";
+  console.log("eventsBySportQuery", eventsBySportQuery);
+  let games = null;
+  let athletes = null;
+  try {
+    let total = await myDb.getEventsBySportCount(eventsBySportQuery);
+    console.log("total = ",total);
+    let events = await myDb.getEventsBySport(eventsBySportQuery, page, pageSize);
+    let sports = null;
+    res.render("./pages/index", {
+      sports,
+      events,
+      query,
+      eventsBySportQuery,
+      games,
+      athletes,
       msg,
       currentPage: page,
       lastPage: Math.ceil(total/pageSize),

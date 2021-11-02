@@ -38,6 +38,8 @@
 
           <% if (events) { %>
             <%- include("../components/eventsByNameSearchBar.ejs", { query }) %>
+          <br/>
+            <%- include("../components/eventsBySportsSearchBar.ejs", { eventsBySportQuery }) %>
             <%- include("../components/eventsList.ejs", { events, currentPage, lastPage }) %>
           <% } %>
 
